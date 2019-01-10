@@ -22,7 +22,7 @@ public class Main {
         int min = Math.toIntExact(LocalDate.of(1840, 1, 1).toEpochDay());
         int max = Math.toIntExact(LocalDate.of(2140, 1, 1).toEpochDay());
 
-        final int NUM = 10;
+        final int NUM = 100;
         var one = new long[NUM];
         var two = new int[NUM][1000];
         for (int i = 0; i < one.length; i++) {
@@ -43,17 +43,21 @@ public class Main {
         Files.write(path, collect, StandardOpenOption.CREATE_NEW);
     }
 
-    public static void parse() throws IOException {
+    private static void parse() throws IOException {
         final List<String> collect = Files.lines(Paths.get(".", "in"))
                 .parallel()
                 .map(v -> {
-                    final var limb = v.split(" ");
-                    var date = new Date(
-                            Integer.valueOf(limb[0]),
-                            Integer.valueOf(limb[1]),
-                            Integer.valueOf(limb[2]));
-                    date.elapse(Integer.valueOf(limb[3]));
-                    return date.format();
+                    try {
+                        final var limb = v.split(" ");
+                        var date = new Date(
+                                Integer.valueOf(limb[0]),
+                                Integer.valueOf(limb[1]),
+                                Integer.valueOf(limb[2]));
+                        date.elapse(Integer.valueOf(limb[3]));
+                        return date.format();
+                    } catch (RuntimeException e) {
+                        return "";
+                    }
                 })
                 .collect(Collectors.toList());
         Files.write(Paths.get(".", "out"), collect, StandardOpenOption.CREATE_NEW);
@@ -62,15 +66,17 @@ public class Main {
     private static void genOrigin() throws IOException {
         var workbook = new XSSFWorkbook();
         var sheet = workbook.createSheet();
-        var row = sheet.createRow(0);
-        row.createCell(0).setCellValue("startYear");
-        row.createCell(1).setCellValue("startMonth");
-        row.createCell(2).setCellValue("startDay");
-        row.createCell(3).setCellValue("elapsedDays");
-        row.createCell(4).setCellValue("expectYear");
-        row.createCell(5).setCellValue("expectMonth");
-        row.createCell(6).setCellValue("expectDay");
-        row.createCell(7).setCellValue("comment");
+        Utility.setRowValue(
+                sheet.createRow(0),
+                "startYear",
+                "startMonth",
+                "startDay",
+                "elapseDay",
+                "expectYear",
+                "expectMonth",
+                "expectDay",
+                "comment"
+        );
 
         final List<String> raw = Files.readAllLines(Paths.get(".", "in"));
 
@@ -78,7 +84,8 @@ public class Main {
         int year, month, day, elapse;
         for (int k = 0; k < raw.size(); k++) {
             limb = raw.get(k).split(" ");
-            row = sheet.createRow(k + 1);
+
+            var row = sheet.createRow(k + 1);
             year = Integer.valueOf(limb[0]);
             month = Integer.valueOf(limb[1]);
             day = Integer.valueOf(limb[2]);
@@ -98,7 +105,7 @@ public class Main {
 
     public static void main(String[] args) throws IOException {
 //        genIn();
-//        parse();
-        genOrigin();
+        parse();
+//        genOrigin();
     }
 }
