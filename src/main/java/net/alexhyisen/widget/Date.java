@@ -1,7 +1,5 @@
 package net.alexhyisen.widget;
 
-import java.time.LocalDate;
-
 public class Date {
     private int year;
     private int month;
