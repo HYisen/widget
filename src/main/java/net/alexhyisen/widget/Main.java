@@ -1,5 +1,8 @@
 package net.alexhyisen.widget;
 
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -56,8 +59,46 @@ public class Main {
         Files.write(Paths.get(".", "out"), collect, StandardOpenOption.CREATE_NEW);
     }
 
+    private static void genOrigin() throws IOException {
+        var workbook = new XSSFWorkbook();
+        var sheet = workbook.createSheet();
+        var row = sheet.createRow(0);
+        row.createCell(0).setCellValue("startYear");
+        row.createCell(1).setCellValue("startMonth");
+        row.createCell(2).setCellValue("startDay");
+        row.createCell(3).setCellValue("elapsedDays");
+        row.createCell(4).setCellValue("expectYear");
+        row.createCell(5).setCellValue("expectMonth");
+        row.createCell(6).setCellValue("expectDay");
+        row.createCell(7).setCellValue("comment");
+
+        final List<String> raw = Files.readAllLines(Paths.get(".", "in"));
+
+        String[] limb;
+        int year, month, day, elapse;
+        for (int k = 0; k < raw.size(); k++) {
+            limb = raw.get(k).split(" ");
+            row = sheet.createRow(k + 1);
+            year = Integer.valueOf(limb[0]);
+            month = Integer.valueOf(limb[1]);
+            day = Integer.valueOf(limb[2]);
+            elapse = Integer.valueOf(limb[3]);
+            row.createCell(0).setCellValue(year);
+            row.createCell(1).setCellValue(month);
+            row.createCell(2).setCellValue(day);
+            row.createCell(3).setCellValue(elapse);
+            var date = LocalDate.of(year, month, day).plusDays(elapse);
+            row.createCell(4).setCellValue(date.getYear());
+            row.createCell(5).setCellValue(date.getMonthValue());
+            row.createCell(6).setCellValue(date.getDayOfMonth());
+        }
+
+        workbook.write(new FileOutputStream("origin.xlsx"));
+    }
+
     public static void main(String[] args) throws IOException {
 //        genIn();
-        parse();
+//        parse();
+        genOrigin();
     }
 }
